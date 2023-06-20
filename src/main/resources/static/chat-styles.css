@@ -1,0 +1,268 @@
+
+.global-area{
+    width: 850px;
+
+    position: relative;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+/*----------左侧会话列表区----------*/
+.dialogue-area{
+    width: 150px;
+    height: 510px;
+    position: absolute;
+    left: 0;
+
+    border-style: solid;
+    border-width: 1px;
+    border-color: #a8a8a8;
+    /*border-radius: 5px;*/
+
+    overflow: auto;
+}
+
+/*会话列表里的单个标签*/
+.dialogue-label{
+    user-select: none;
+}
+
+
+.dialogue-label:hover,.dialogue-label:active,.dialogue-add:hover{
+    background-color: #c6c6c6;
+}
+
+
+/*会话添加按钮*/
+.dialogue-add{
+    color: #147147;
+    user-select: none;
+}
+
+
+.dialogue-label,.dialogue-add{
+    width: 134px;
+    height: 20px;
+
+    padding: 8px;
+
+    border-bottom-style: solid;
+    border-bottom-width: 1px;
+    border-bottom-color: #a8a8a8;
+}
+
+/*----------右侧聊天区----------*/
+.chat-area{
+    /*max-width: 700px;*/
+    /*min-width: 400px;*/
+    /*width: 70%;*/
+    width: 700px;
+    /*height: 500px;*/
+    min-height: 500px;
+    /*margin-left: auto;*/
+    /*margin-right: auto;*/
+    /*border: 1px solid black;*/
+
+    position: absolute;
+    left: 151px;
+}
+
+/*聊天顶部标题区*/
+.title-area{
+    height: 25px;
+    position: relative;
+    padding: 10px;
+    background-color: #f7f7f7;
+
+    /*border: 1px solid white;*/
+    border-style: solid;
+    border-width: 1px;
+    border-color: #a8a8a8;
+    /*border-radius: 5px;*/
+    border-bottom: none;
+}
+
+/*标题区的GPT头像*/
+.title-area-img{
+    height: 30px;
+    width: 30px;
+    border-radius: 10px;
+    position: absolute;
+    left: 10px;
+    top: 7px;
+    user-select: none;
+}
+
+/*标题区当前会话名*/
+.title-area-diaName{
+    position: absolute;
+    left: 50px;
+}
+
+/*聊天记录区*/
+.history-area{
+
+   /*min-height: 325px;*/
+   /* max-height: 725px;*/
+    height: 725px;
+
+    border-style: solid;
+    border-width: 1px;
+    border-color: #a8a8a8;
+    /*border-radius: 5px;*/
+    border-bottom: none;
+    /*overflow: auto;*/
+    overflow: auto;
+
+    position: relative;
+
+}
+
+/*用户消息*/
+.history-area-user{
+    background-color: #FFFFFF;
+}
+
+/*GPT消息*/
+.history-area-gpt{
+    background-color: #f7f7f7;
+}
+
+.history-area-user,.history-area-gpt{
+    min-height: 30px;
+    padding: 10px;
+    position: relative;
+
+    /*overflow: hidden;*/
+}
+
+/*消息文字*/
+.history-area-text{
+    font: inherit;
+
+    position: absolute;
+    left: 50px;
+    top: 14px;
+    max-width: 630px;
+
+    white-space: pre-wrap;
+}
+
+/*消息的头像*/
+.history-area-headImg{
+    height: 30px;
+    width: 30px;
+    border-radius: 10px;
+    position: absolute;
+    left: 10px;
+    user-select: none;
+}
+
+/*用户输入和按钮区*/
+.input-area{
+    border-style: solid;
+    border-width: 1px;
+    border-color: #a8a8a8;
+
+}
+
+/*文字输入*/
+.input-text-area{
+    padding: 10px;
+    height: 80px;
+}
+
+/*输入框*/
+.input-textarea{
+    height: 80px;
+    width: 100%;
+    padding: 0;
+
+    font: inherit;
+
+    border: none;
+    outline: none;
+    resize: none;
+
+}
+
+/*输入区按钮样式*/
+.input-button-area{
+    height: 40px;
+
+    position: relative;
+    /*float: right;*/
+    /*border-style: solid;*/
+    /*border-width: 1px;*/
+    /*border-color: #a8a8a8;*/
+    /*border-radius: 5px;*/
+}
+
+.input-button-send,.input-button-gpt,.input-button-deleteMessage,.input-button-renameDialogue{
+    position: absolute;
+
+    height: 30px;
+
+    font: inherit;
+
+    border: none;
+    border-radius: 5px;
+}
+
+.input-button-gpt:hover,.input-button-deleteMessage:hover,.input-button-renameDialogue:hover{
+    background-color: #909090;
+}
+
+.input-button-send:hover{
+    background-color: #639689;
+}
+
+.input-button-send{
+    right: 10px;
+    width: 60px;
+    background-color: #19c37d;
+    color: #f8f8f8;
+}
+
+.input-button-deleteMessage{
+    right: 80px;
+    width: 90px;
+}
+
+.input-button-renameDialogue{
+    right: 180px;
+    width: 100px;
+}
+
+.input-button-gpt{
+    right: 180px;
+}
+
+.text-container{
+    /*position: relative;*/
+}
+
+.code-container {
+    /*position: relative;*/
+    /*position: relative;*/
+    /*overflow: auto;*/
+}
+
+.code-container code {
+    /*position: relative;*/
+    font-family: Consolas, monospace; /* 设置代码块内代码的字体样式 */
+    font-size: 14px; /* 设置代码块内代码的字体大小 */
+    /* 其他样式设置，例如颜色、背景色等 */
+    /*overflow: auto;*/
+    /*display: inline-block;*/
+}
+
+.code-container-title-language{
+    position: absolute;
+    left: 10px;
+}
+
+.code-container-title-copy{
+    position: absolute;
+    right: 10px;
+}

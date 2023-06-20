@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.likaitong.chatgptweb.dao.GPTDao">
+    <insert id="insertMessage" parameterType="com.likaitong.chatgptweb.entity.DaoEntity.DialogueMessage">
+        insert into gpt_message(dialogue_id, role, content) values (#{dialogueId},#{role},#{content})
+    </insert>
+    <insert id="insertDialogue" parameterType="com.likaitong.chatgptweb.entity.DaoEntity.DialogueInfo">
+        insert into gpt_dialogue(dialogue_id,dialogue_name) values(#{dialogueId},#{dialogueName})
+    </insert>
+
+    <update id="updateDialogueName" parameterType="com.likaitong.chatgptweb.entity.DaoEntity.DialogueInfo">
+        update gpt_dialogue set dialogue_name=#{dialogueName} where dialogue_id=#{dialogueId}
+    </update>
+
+    <delete id="deleteMessageByDiaId" parameterType="string">
+        delete from gpt_message where dialogue_id=#{diaId}
+    </delete>
+    <delete id="deleteDialogueByDiaId" parameterType="string">
+        delete from gpt_dialogue where dialogue_id=#{diaId}
+    </delete>
+
+
+    <select id="getMessageByDiaId" parameterType="string" resultType="com.likaitong.chatgptweb.entity.ChatGPTEntity.Message">
+        select role,content from gpt_message where dialogue_id=#{diaId}
+    </select>
+    <select id="getAllDialogueInfo" resultType="com.likaitong.chatgptweb.entity.DaoEntity.DialogueInfo">
+        select * from gpt_dialogue
+    </select>
+</mapper>

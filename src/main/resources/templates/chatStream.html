@@ -1,0 +1,434 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <script src="https://code.jquery.com/jquery-3.1.1.min.js"></script>
+    <link rel="stylesheet" href="chat-styles.css">
+
+    <script src="./marked.min.js"></script>
+    <script src="highlight/highlight.min.js"></script>
+    <link rel="stylesheet" href="highlight/styles/atom-one-dark-reasonable.min.css">
+
+</head>
+<body>
+
+
+<div class="global-area">
+    <div class="dialogue-area" id="dialogue">
+
+    </div>
+
+
+    <!--    聊天区-->
+    <div class="chat-area">
+
+        <!--        顶部栏-->
+        <div class="title-area">
+            <img src="gpt.png" class="title-area-img">
+            <div class="title-area-diaName" id="title-diaName">
+
+            </div>
+        </div>
+
+        <!--        聊天记录区-->
+        <div id="history" class="history-area">
+
+        </div>
+
+        <div class="input-area">
+            <!--        消息输入框-->
+            <div class="input-text-area" >
+                <textarea id="sendBox" class="input-textarea" placeholder="请输入..."></textarea>
+            </div>
+
+            <!--        按键区-->
+            <div class="input-button-area">
+                <button onclick="send()" class="input-button-send" id="button-send">发送</button>
+                <button onclick="deleteMessage()" class="input-button-deleteMessage" id="button-delete">删除对话</button>
+                <button onclick="renameDialogue()" class="input-button-renameDialogue" id="button-rename">重命名对话</button>
+            </div>
+        </div>
+
+    </div>
+
+
+</div>
+
+
+
+<script>
+    let curDiaId="no-dialogue";
+
+    //获取所以的会话，并显示在会话列表，并设置当前会话id为第一个会话，此时未进行对话选中显示和对话内容显示
+    function loadDia(last=false) {
+        $.ajax({
+            url: "/chatStream/getAllDialogueInfo",
+            dataType: 'json',
+            contentType: 'application/json',
+            type: 'get',
+            async:false,
+            success: function (response) {
+                $('#dialogue').empty();
+                let length = response.length;
+                if(last){
+                    curDiaId=response[response.length-1].dialogueId;
+                }else {
+                    curDiaId=response[0].dialogueId;
+                }
+                for (let i = 0; i < length; i++) {
+                    let diaId=response[i].dialogueId;
+                    let diaName=response[i].dialogueName;
+                    $('#dialogue').append(' <div class="dialogue-label" id="'+diaId+'" onclick="clickDiaLabel(this.id)">\n' +
+                        '            '+diaName+'\n' +
+                        '        </div>')
+                }
+
+                $('#dialogue').append('' +
+                    '<div class="dialogue-add" onclick="createNewDialogue()">\n' +
+                    '            创建新对话+' +
+                    '        </div>')
+            }
+        });
+
+
+    }
+
+    //点击一个会话时触发操作，设置会话id为被点击的会话id，设置选中效果，并显示该对话的内容
+    function clickDiaLabel(diaId) {
+        if(diaId!==curDiaId){
+            curDiaId=diaId;
+            selectedDiaLabel();
+            showDia();
+        }
+    }
+
+    //设置选中会话标签的显示效果
+    function selectedDiaLabel(){
+        var diaLabelList=$('#dialogue > div');
+        diaLabelList.each(function () {
+            if($(this).attr("class")==="dialogue-label"&&$(this).attr("id")===curDiaId){
+                $(this).css("background-color", "#c6c6c6")
+            }else if($(this).attr("class")==="dialogue-label"&&$(this).attr("id")!==curDiaId){
+                $(this).css("background-color", "white")
+            }
+        })
+    }
+
+
+    //根据当前的会话id，并请求后端获取该会话的内容，并显示在聊天记录区
+    function showDia() {
+        $.ajax({
+            url: "/chatStream/getDialogue?dialogueId="+curDiaId,
+            dataType: 'json',
+            contentType: 'application/json',
+            type: 'get',
+            async:false,
+            success: function (response) {
+                if(response.code===200){
+                    $('#title-diaName').empty();
+                    $('#title-diaName').append($('#'+curDiaId).text());
+                    if(response!==null){
+                        $('#history').empty();
+                        messages=response.messages;
+                        let length=messages.length;
+                        for(let i=0;i<length;i++){
+                            if(messages[i].role==='user'){
+                                addUserMessageHistory(messages[i].content);
+                            }else if(messages[i].role==='assistant'){
+                                addGPTMessageHistory(messages[i].content);
+                            }
+
+                        }
+                    }
+                }else {
+                    confirm("当前会话不存在！");
+                    location.reload();
+                }
+            }
+        })
+    }
+
+    function adjustChatBox(){
+        //调整gpt消息框大小
+        // $('#history').children("div:last-child").children("div:last-child").height($('#history').children("div:last-child").children("div:last-child").children("div:last-child").height());
+        $('#history').children("div:last-child").height($('#history').children("div:last-child").children("div:last-child").height());
+
+        //动态调整历史记录框的大小
+        var historyArea=$('#history');
+        historyArea.scrollTop(historyArea[0].scrollHeight);
+
+        var dialogueArea=$('#dialogue');
+        dialogueArea.scrollTop(dialogueArea[0].scrollHeight);
+    }
+
+    function addUserMessageHistory(content=''){
+        if(content.endsWith('\n')){
+            let length=content.length;
+            content=content.substr(0,length-1);
+        }
+        $('#history').append(
+            '<div class="history-area-user">' +
+            '                    <img src="user.png" class="history-area-headImg">' +
+            '                <div class="history-area-text"></div>' +
+            '            </div>'
+        );
+        let textElement=$('<div class="text-container"></div>');
+        textElement.text(content);
+        $('#history').children('div:last-child').children('div:last-child').append(textElement);
+        adjustChatBox();
+    }
+
+    function addGPTMessageHistory(content=''){
+        $('#history').append(
+            '<div class="history-area-gpt">' +
+            '                    <img src="gpt.png" class="history-area-headImg">' +
+            '                <div class="history-area-text"></div>' +
+            '            </div>'
+        );
+
+        let contentList = content.split('```');
+        // let startWithMarkDown=content.startsWith('```');
+
+        for(let i=0;i<contentList.length;i++){
+            if(contentList[i]==='') continue;
+            // if(i%2===0&&!startWithMarkDown||i%2===1&&startWithMarkDown){
+            if(i%2===0){
+                let textElement=$('<div class="text-container"></div>');
+                textElement.text(contentList[i]);
+                $('#history').children("div:last-child").children("div:last-child").append(textElement);
+
+            }
+            // else if(i%2===1&&!startWithMarkDown||i%2===0&&startWithMarkDown){
+            else if(i%2===1){
+                let codeElement=$('<div class="code-container">'+marked.marked('```'+contentList[i]+'```')+'</div>');
+                $('#history').children("div:last-child").children("div:last-child").append(codeElement);
+                hljs.highlightAll();
+            }
+        }
+
+        adjustChatBox();
+        hljs.highlightAll();
+
+
+    }
+
+
+
+    window.onload=function(event){
+        loadDia();
+        getCurDialogueId();
+        selectedDiaLabel();
+        showDia();
+    };
+
+    //监听回车事件
+    $("#sendBox").keyup(function (event) {
+        if(event.keyCode===13&&!event.shiftKey){
+            $('#button-send').click();
+        }
+    });
+
+    function send() {
+        var userContent=$('#sendBox').val();
+
+        if(userContent.trim().length===0){
+            $('#sendBox').val('');
+            return;
+        }
+
+        //添加新的用户消息框
+        addUserMessageHistory(userContent);
+
+
+        //清空发送栏
+        $('#sendBox').val('');
+
+        addGPTMessageHistory('');
+
+
+        $.ajax({
+            url:"/chatStream/postUserContent",
+            dataType: 'json',
+            contentType: 'application/json',
+            type:'post',
+            data: JSON.stringify({dialogueId:curDiaId,role:"user",content:userContent}),
+            success: function (response) {
+                disableButton();
+
+                let sendDiaId=curDiaId;
+
+                let eventSource = new EventSource('/chatStream/getChatResponseStream?dialogueId='+curDiaId);
+
+                let curContent='';
+
+                eventSource.onmessage = function(event) {
+
+                    if(sendDiaId!==curDiaId){
+                        eventSource.close();
+                        return;
+                    }
+
+                    //获取数据流里面的json数据
+                    var messageJson = event.data;
+
+                    // 在gpt消息栏的文本部分追加消息
+                    //如果接收到[DONE]则表示数据流接收结束
+                    if(messageJson==='[DONE]') {
+                        eventSource.close();
+                    }else if(messageJson.startsWith('[ERROR]')){
+                        $('#history').children("div:last-child").children("div:last-child").css("color", "red");
+                        $('#history').children("div:last-child").children("div:last-child").append(messageJson.substr(7,messageJson.length));
+                        adjustChatBox();
+                    }
+                    else {
+                        //否则，将json数据转换为对象
+                        let messageObj=JSON.parse(messageJson);
+                        //获取gpt的消息内容
+                        let gptContent=messageObj.choices[0].delta.content;
+
+                        if(gptContent!==undefined){
+                            $('#history').children("div:last-child").children("div:last-child").empty();
+                            curContent+=gptContent;
+                            let contentList = curContent.split('```');
+
+
+                            for(let i=0;i<contentList.length;i++){
+                                if(contentList[i]==='') continue;
+                                if(i%2===0){
+                                    let textElement=$('<div class="text-container"></div>');
+                                    textElement.text(contentList[i]);
+                                    $('#history').children("div:last-child").children("div:last-child").append(textElement);
+
+                                }
+                                else if(i%2===1){
+                                    let codeElement=$('<div class="code-container">'+marked.marked('```'+contentList[i])+'</div>');
+                                    $('#history').children("div:last-child").children("div:last-child").append(codeElement);
+                                    hljs.highlightAll();
+
+                                }
+                            }
+
+                            adjustChatBox();
+                        }
+
+                    }
+
+                };
+
+                eventSource.onerror=function (event) {
+                   eventSource.close();
+                };
+
+
+                let checkES=setInterval(function () {
+                   if(eventSource.readyState===2){
+                       clearInterval(checkES);
+                       enableButton();
+                       curContent='';
+                   }
+                },500)
+
+            },
+        });
+
+    }
+
+    function disableButton() {
+        $('#button-send').prop('disabled',true);
+        $('#button-delete').prop('disabled',true);
+        $('#button-rename').prop('disabled',true);
+    }
+
+    function enableButton() {
+        $('#button-send').prop('disabled',false);
+        $('#button-delete').prop('disabled',false);
+        $('#button-rename').prop('disabled',false);
+    }
+
+    function deleteMessage() {
+        if(confirm("确定清空对话？")){
+            $.ajax({
+                url: "/chatStream/deleteDialogue?dialogueId="+curDiaId,
+                dataType: 'json',
+                type: 'get',
+                success: function (response) {
+                    if(response.code===200){
+                        location.reload();
+                    }else if(response.code===410){
+                        confirm("当前会话不存在！");
+                        location.reload();
+                    }else if(response.code===411){
+                        confirm("当前会话正在进行聊天！");
+                        location.reload();
+                    }else {
+                        location.reload();
+                    }
+                }
+            })
+        }
+    }
+
+
+    function createNewDialogue() {
+
+        $.ajax({
+            url: "/chatStream/createNewDialogue",
+            dataType: 'json',
+            contentType: 'application/json',
+            type: 'get',
+            success: function (response) {
+                loadDia();
+                curDiaId=response.dialogueId;
+                selectedDiaLabel();
+                showDia();
+            }
+        });
+    }
+
+
+    function getCurDialogueId(){
+        $.ajax({
+            url: "/chatStream/getCurDialogueId",
+            dataType: 'text',
+            contentType: 'application/json',
+            type: 'get',
+            async:false,
+            success: function (response) {
+                if(response!=="no-dialogueId"){
+                    curDiaId=response;
+                }
+            }
+        })
+    }
+
+    function renameDialogue() {
+        let diaName=window.prompt("请输入对话名:","默认对话");
+        if(diaName!==null){
+            $.ajax({
+                url: "/chatStream/renameDialogue",
+                dataType: 'text',
+                contentType: 'application/json',
+                type: 'post',
+                data: JSON.stringify({dialogueId: curDiaId, dialogueName:diaName}),
+                success: function (response) {
+                    if(response.code===200){
+                        location.reload();
+                    }else if(response.code===410) {
+                        confirm("当前会话不存在！");
+                        location.reload();
+                    }else {
+                        location.reload();
+                    }
+                }
+            });
+        }
+
+
+    }
+
+
+</script>
+
+</body>
+</html>
