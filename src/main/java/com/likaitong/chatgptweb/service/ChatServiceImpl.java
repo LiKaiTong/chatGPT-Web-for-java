@@ -26,7 +26,7 @@ import java.util.List;
 public class ChatServiceImpl implements ChatService {
 
     String httpUrl="https://api.openai.com/v1/chat/completions";
-    String apiKey="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";
+    String apiKey="";
     String model="gpt-3.5-turbo";
 
     private List<Message> messageList=new ArrayList<>();
